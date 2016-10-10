@@ -13,7 +13,9 @@ Neuron::Neuron(unsigned inputSize)
 
 double Neuron::activatorFun(double x)
 {
-	return tanh(x);
+	//return tanh(x);
+	if (x > 0.5f) return 1;
+	else return 0;
 }
 
 double Neuron::derivativeActivatorFun(double x)
@@ -42,5 +44,6 @@ double Neuron::calculateOutputValue()
 		Connection connection = inputs[i];
 		sum += (connection.weight * connection.value);
 	}
-	return activatorFun(sum);
+	this->outputValue = activatorFun(sum);
+	return outputValue;
 }

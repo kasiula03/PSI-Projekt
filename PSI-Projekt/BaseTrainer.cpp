@@ -3,27 +3,32 @@
 
 BaseTrainer::BaseTrainer(vector<vector<double>> neurons, vector<double> targetVal, Neuron & neuron)
 {
-	double ni = 0.01;
+	double ni = 0.05;
 	int inputCounter = neurons.back().size();
 	for (int i = 0; i < neurons.size(); i++)
 	{
 		vector<double> inputs = neurons[i];
 		//cout << "WEIGHTS ";
-		//for (int j = 0; j < inputs.size(); j++)
-			//cout << neuron.inputs[j].weight << " ";
+		for (int j = 0; j < inputs.size(); j++)
+			cout << neuron.inputs[j].weight << " ";
 		for (int j = 0; j < inputs.size(); j++)
 			neuron.inputs[j].value = inputs[j];
 	//	cout << endl;
 		vector<double> weights;
 		double output = neuron.calculateOutputValue();
 		double delta  = targetVal[i] - output;
-		for (int j = 0; j < inputCounter; j++)
+		for (int j = 0; j < inputs.size(); j++)
 		{
 			double newWeight = neuron.inputs[j].weight + (ni * delta * inputs[j]);
 			weights.push_back(newWeight);
 		}
 		neuron.updateInputWeight(weights);
-		//cout << "\n delta " << delta;
+		cout << "\n input ";
+		for (int j = 0; j < inputs.size(); j++)
+		{
+			cout << inputs[j] << " ";
+		}
+		cout << " output " << output << endl;
 	
 	}
 	
