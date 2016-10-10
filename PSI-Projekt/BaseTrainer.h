@@ -6,7 +6,7 @@ typedef vector<Neuron> layer;
 class BaseTrainer
 {
 public:
-	BaseTrainer(vector<Neuron> & neurons, vector<double> targetVal);
+	BaseTrainer(vector<vector<double>>, vector<double> targetVal, Neuron & neuron);
 	void weigthTest(vector<Neuron> neurons, vector<double> targetVal);
 private:
 	vector<layer> net;

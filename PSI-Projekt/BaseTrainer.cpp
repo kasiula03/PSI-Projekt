@@ -1,30 +1,32 @@
 #include "BaseTrainer.h"
 #include <iostream>
 
-BaseTrainer::BaseTrainer(vector<Neuron> & neurons, vector<double> targetVal)
+BaseTrainer::BaseTrainer(vector<vector<double>> neurons, vector<double> targetVal, Neuron & neuron)
 {
-	int inputCounter = neurons.back().inputs.size();
+	double ni = 0.01;
+	int inputCounter = neurons.back().size();
 	for (int i = 0; i < neurons.size(); i++)
 	{
-		double delta = 1.0;
-		while (delta > 0.05)
-		{
-			vector<double> weights;
-			double output = neurons[i].calculateOutputValue();
-			delta = targetVal[i] - output;
-			for (int j = 0; j < inputCounter; j++)
-			{
-				weights.push_back(neurons[i].inputs[j].weight + (delta * targetVal[i]));
-			}
-			neurons[i].updateInputWeight(weights);
-
-		}
+		vector<double> inputs = neurons[i];
+		//cout << "WEIGHTS ";
+		//for (int j = 0; j < inputs.size(); j++)
+			//cout << neuron.inputs[j].weight << " ";
+		for (int j = 0; j < inputs.size(); j++)
+			neuron.inputs[j].value = inputs[j];
+	//	cout << endl;
+		vector<double> weights;
+		double output = neuron.calculateOutputValue();
+		double delta  = targetVal[i] - output;
 		for (int j = 0; j < inputCounter; j++)
 		{
-			cout << neurons[i].inputs[j].weight << " ";
+			double newWeight = neuron.inputs[j].weight + (ni * delta * inputs[j]);
+			weights.push_back(newWeight);
 		}
-		cout << endl;
+		neuron.updateInputWeight(weights);
+		//cout << "\n delta " << delta;
+	
 	}
+	
 	
 }
 
