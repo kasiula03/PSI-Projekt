@@ -1,5 +1,8 @@
 #include "Neuron.h"
+#include <iostream>
 #include <cmath>
+
+using namespace std;
 
 Neuron::Neuron(unsigned inputSize)
 {
@@ -13,14 +16,33 @@ Neuron::Neuron(unsigned inputSize)
 
 double Neuron::activatorFun(double x)
 {
+	//if (x >= 0.5f) return 1;
+	//else return 0;
+	double mian = 1 + exp(-x);
+	return (1 / mian);
 	//return tanh(x);
-	if (x > 0.5f) return 1;
-	else return 0;
+}
+
+void Neuron::showNeuron()
+{
+	cout << "Weights: ";
+	for (int i = 0; i < inputs.size(); ++i)
+	{
+		cout << inputs[i].weight << " ";
+	}
+	cout << "\n Inputs: ";
+	for (int i = 0; i < inputs.size(); ++i)
+	{
+		cout << inputs[i].value << " ";
+	}
+	cout << endl;
+	cout << "Output " << getOutputValue() << endl;
 }
 
 double Neuron::derivativeActivatorFun(double x)
 {
-	return (1.0 - x * x);
+	return Neuron::activatorFun(x)*(1 - Neuron::activatorFun(x));
+	//return (1.0 - x*x);
 }
 
 void Neuron::updateInputWeight(vector <double> weight)
@@ -46,4 +68,36 @@ double Neuron::calculateOutputValue()
 	}
 	this->outputValue = activatorFun(sum);
 	return outputValue;
+}
+
+void Neuron::calcOutputGradients(double targetVal)
+{
+	double delta = targetVal - outputValue;
+	//gradient = delta * Neuron::derivativeActivatorFun(outputValue);
+	gradient = delta;
+}
+
+void Neuron::calcHiddenGradients(const vector<Neuron> &nextLayer)
+{
+	double sum = 0.0;
+	for (int i = 0; i < nextLayer.size(); i++)
+	{
+		sum += (inputs[i].weight * nextLayer[i].gradient);
+	}
+	//gradient = sum * Neuron::derivativeActivatorFun(outputValue);
+	gradient = sum;
+}
+
+void Neuron::updateInputWeight(double q)
+{
+	double sum = 0.0;
+	for (int i = 0; i < inputs.size(); ++i)
+	{
+		sum += (inputs[i].value * inputs[i].weight);
+	}
+	for (int i = 0; i < inputs.size(); ++i)
+	{
+		double deltaWeight = q * gradient * Neuron::derivativeActivatorFun(sum) * inputs[i].value;
+		inputs[i].weight += deltaWeight;
+	}
 }

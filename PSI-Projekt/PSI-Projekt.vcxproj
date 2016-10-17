@@ -68,7 +68,10 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>E:\Download\OpenCV\opencv\build\include;$(IncludePath)</IncludePath>
+    <LibraryPath>E:\Download\OpenCV\opencv\build\x64\vc14\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -81,7 +84,11 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>E:\Biblioteki\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>opencv_world310d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -112,14 +119,14 @@
   <ItemGroup>
     <ClInclude Include="BaseTrainer.h" />
     <ClInclude Include="Connection.h" />
-    <ClInclude Include="Net.h" />
+    <ClInclude Include="Network.h" />
     <ClInclude Include="Neuron.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BaseTrainer.cpp" />
     <ClCompile Include="Connection.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Net.cpp" />
+    <ClCompile Include="Network.cpp" />
     <ClCompile Include="Neuron.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

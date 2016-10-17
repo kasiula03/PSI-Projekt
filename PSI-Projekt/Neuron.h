@@ -4,6 +4,7 @@
 
 using namespace std;
 
+
 class Neuron
 {
 public:
@@ -11,10 +12,14 @@ public:
 	vector <Connection> inputs;
 
 	inline void setOutputValue(double x) { outputValue = x; }
-	inline double getOutputValue() { return outputValue; }
+	inline double getOutputValue() const { return outputValue; }
 
-	double calculateOutputValue();
+	void calcOutputGradients(double targetVal);
+	void calcHiddenGradients(const vector<Neuron> &nextLayer);
 	void updateInputWeight(vector <double> weight);
+	void updateInputWeight(double q);
+	void showNeuron();
+	double calculateOutputValue();
 	static double activatorFun(double x);
 	static double derivativeActivatorFun(double x);
 	double gradient;

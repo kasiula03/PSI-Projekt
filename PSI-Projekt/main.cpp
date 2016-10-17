@@ -2,18 +2,73 @@
 #include <cstdlib>
 #include <ctime>
 #include <vector>
-#include "Neuron.h"
+
+#include<opencv2/core/core.hpp>
+
+#include<opencv2/highgui/highgui.hpp>
+#include<opencv2/imgproc/imgproc.hpp>
+
 #include "BaseTrainer.h"
+#include "Network.h"
+
+using namespace cv;
 using namespace std;
 
 int main()
 {
 	srand(time(NULL));
+	vector<double> vec{ 2,2,1 };
+	Network network(vec);
+	//network.initializeInputs(input, 0);
+	//network.feedForward();
 
+	//xor
 	vector<vector<double>> neurons;
 	vector<double> targetVal;
-	//and
-	Neuron neuron1(2);
+	for (int i = 20000; i >= 0; --i)
+	{
+		int n1 = (int)(2.0 * rand() / double(RAND_MAX));
+		int n2 = (int)(2.0 * rand() / double(RAND_MAX));
+		int t;
+		if ((n1 == 0 && n2 == 0) || (n1 == 1 && n2 == 1))
+			t = 0;
+		else
+			t = 1;
+
+		vector<double> neuron;
+		neuron.push_back(n1);
+		neuron.push_back(n2);
+		neurons.push_back(neuron);
+		targetVal.push_back(t);
+	}
+	BaseTrainer trainer(neurons, targetVal, network);
+	vector<double> inp = { 0,1 };
+	network.initializeInputs(inp, 0);
+	network.feedForward();
+	cout << "\nTest : " << inp[0] << " " << inp[1] << endl;
+	cout << "\n " << network.layers.back().back().getOutputValue();
+
+	inp = { 1,0 };
+	network.initializeInputs(inp, 0);
+	network.feedForward();
+	cout << "\nTest : " << inp[0] << " " << inp[1] << endl;
+	cout << "\n " << network.layers.back().back().getOutputValue();
+
+	inp = { 0,0 };
+	network.initializeInputs(inp, 0);
+	network.feedForward();
+	cout << "\nTest : " << inp[0] << " " << inp[1] << endl;
+	cout << "\n " << network.layers.back().back().getOutputValue();
+
+	inp = { 1,1 };
+	network.initializeInputs(inp, 0);
+	network.feedForward();
+	cout << "\nTest : " << inp[0] << " " << inp[1] << endl;
+	cout << "\n " << network.layers.back().back().getOutputValue();
+/*
+	vector<vector<double>> ANDneurons;
+	vector<double> ANDtargetVal;
+	Neuron neuronAND(2);
 	for (int i = 2000; i >= 0; --i)
 	{
 		int n1 = (int)(2.0 * rand() / double(RAND_MAX));
@@ -23,91 +78,23 @@ int main()
 		vector<double> neuron;
 		neuron.push_back(n1);
 		neuron.push_back(n2);
-		neurons.push_back(neuron);
-		targetVal.push_back(t);
-		//cout << n1 << " " << n2 << " " << t << endl;
-	}
-	
-	BaseTrainer trainer(neurons, targetVal, neuron1);
-	Neuron test1(2);
-	test1.inputs[0].weight = neuron1.inputs[0].weight;
-	test1.inputs[1].weight = neuron1.inputs[1].weight;
-	test1.inputs[0].value = 0;
-	test1.inputs[1].value = 0;
-	Neuron test2(2);
-	test2.inputs[0].weight = neuron1.inputs[0].weight;
-	test2.inputs[1].weight = neuron1.inputs[1].weight;
-	test2.inputs[0].value = 1;
-	test2.inputs[1].value = 0;
-	Neuron test3(2);
-	test3.inputs[0].weight = neuron1.inputs[0].weight;
-	test3.inputs[1].weight = neuron1.inputs[1].weight;
-	test3.inputs[0].value = 0;
-	test3.inputs[1].value = 1;
-	Neuron test4(2);
-	test4.inputs[0].weight = neuron1.inputs[0].weight;
-	test4.inputs[1].weight = neuron1.inputs[1].weight;
-	test4.inputs[0].value = 1;
-	test4.inputs[1].value = 1;
-	cout << endl << endl << test1.calculateOutputValue() << " " << test2.calculateOutputValue() << " " << test3.calculateOutputValue() << " " << test4.calculateOutputValue() << endl;
-	//trainer.weigthTest(neurons, targetVal);
-
-	//or
-	Neuron neuron2(2);
-	vector<vector<double>> neurons2;
-	vector<double> targetVal2;
-	for (int i = 2000; i >= 0; --i)
-	{
-		int n1 = (int)(2.0 * rand() / double(RAND_MAX));
-		int n2 = (int)(2.0 * rand() / double(RAND_MAX));
-
-		int t = n1 | n2;
-		vector<double> neuron;
-		neuron.push_back(n1);
-		neuron.push_back(n2);
-		neurons2.push_back(neuron);
-		targetVal2.push_back(t);
-		//cout << n1 << " " << n2 << " " << t << endl;
+		ANDneurons.push_back(neuron);
+		ANDtargetVal.push_back(t);
 	}
 
-	BaseTrainer trainer2(neurons2, targetVal2, neuron2);
-	test1.inputs[0].weight = neuron2.inputs[0].weight;
-	test1.inputs[1].weight = neuron2.inputs[1].weight;
-	test2.inputs[0].weight = neuron2.inputs[0].weight;
-	test2.inputs[1].weight = neuron2.inputs[1].weight;
-	test3.inputs[0].weight = neuron2.inputs[0].weight;
-	test3.inputs[1].weight = neuron2.inputs[1].weight;
-	test4.inputs[0].weight = neuron2.inputs[0].weight;
-	test4.inputs[1].weight = neuron2.inputs[1].weight;
-	cout << endl << endl << test1.calculateOutputValue() << " " << test2.calculateOutputValue() << " " << test3.calculateOutputValue() << " " << test4.calculateOutputValue() << endl;
-
-	//trainer2.weigthTest(neurons2, targetVal2);
-	//not
-	vector<vector<double>> neurons3;
-	vector<double> targetVal3;
-	Neuron neuron3(1);
-	for (int i = 2000; i >= 0; --i)
-	{
-		int n1 = (int)(2.0 * rand() / double(RAND_MAX));
-
-		int t = !n1;
-		vector<double> neuron;
-		neuron.push_back(n1);
-		neurons3.push_back(neuron);
-		targetVal3.push_back(t);
-		
-		//cout << n1 << " " << n2 << " " << t << endl;
-	}
-
-	BaseTrainer trainer3(neurons3, targetVal3, neuron3);
-	Neuron t1(1), t2(1), t3(1), t4(1);
-	t1.inputs[0].weight = neuron3.inputs[0].weight;
-	t2.inputs[0].weight = neuron3.inputs[0].weight;
-	t1.inputs[0].value = 0;
-	t2.inputs[0].value = 1;
-
-	cout << endl << endl << t1.calculateOutputValue() << " " << t2.calculateOutputValue() << endl;
-
+	BaseTrainer trainerAND(ANDneurons, ANDtargetVal, neuronAND);
+	neuronAND.inputs[0].value = 0;
+	neuronAND.inputs[1].value = 0;
+	cout << "\n" << neuronAND.calculateOutputValue();
+	neuronAND.inputs[0].value = 1;
+	neuronAND.inputs[1].value = 0;
+	cout << "\n" << neuronAND.calculateOutputValue();
+	neuronAND.inputs[0].value = 0;
+	neuronAND.inputs[1].value = 1;
+	cout << "\n" << neuronAND.calculateOutputValue();
+	neuronAND.inputs[0].value = 1;
+	neuronAND.inputs[1].value = 1;
+	cout << "\n" << neuronAND.calculateOutputValue();*/
 	system("pause");
 	return 0;
 }
