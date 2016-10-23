@@ -10,18 +10,13 @@ Neuron::Neuron(unsigned inputSize)
 	{
 		inputs.push_back(Connection());
 		inputs.back().weight = randomWeight();
+
 	}
 	outputValue = calculateOutputValue();
+	
 }
 
-double Neuron::activatorFun(double x)
-{
-	//if (x >= 0.5f) return 1;
-	//else return 0;
-	double mian = 1 + exp(-x);
-	return (1 / mian);
-	//return tanh(x);
-}
+
 
 void Neuron::showNeuron()
 {
@@ -37,6 +32,36 @@ void Neuron::showNeuron()
 	}
 	cout << endl;
 	cout << "Output " << getOutputValue() << endl;
+}
+
+void Neuron::feedForward()
+{
+	double sum = 0.0;
+	for (int i = 0; i < inputs.size(); ++i)
+	{
+		sum += inputs[i].value * inputs[i].weight;
+	}
+	outputValue = Neuron::activatorFun(sum);
+}
+
+void Neuron::feedForward(const vector<double> &prevLayer)
+{
+	double sum = 0.0;
+	for (int i = 0; i < prevLayer.size(); ++i)
+	{
+		sum += prevLayer[i] * inputs[i].weight;
+	}
+	outputValue = Neuron::activatorFun(sum);
+}
+
+double Neuron::activatorFun(double x)
+{
+	if (x >= 0.5f) return 1;
+	else return 0;
+
+	//double mian = 1 + exp(-x);
+	//return (1 / mian);
+	//return tanh(x);
 }
 
 double Neuron::derivativeActivatorFun(double x)
@@ -82,7 +107,15 @@ void Neuron::calcHiddenGradients(const vector<Neuron> &nextLayer)
 	double sum = 0.0;
 	for (int i = 0; i < nextLayer.size(); i++)
 	{
-		sum += (inputs[i].weight * nextLayer[i].gradient);
+		for (int j = 0; j < nextLayer[i].inputs.size(); ++j)
+		{
+			if (nextLayer[i].inputs[j].input == this)
+			{
+				sum += (nextLayer[i].inputs[j].weight * nextLayer[i].gradient);
+			}
+		}
+		
+		
 	}
 	//gradient = sum * Neuron::derivativeActivatorFun(outputValue);
 	gradient = sum;

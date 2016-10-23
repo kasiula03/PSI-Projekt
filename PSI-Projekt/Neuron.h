@@ -16,16 +16,20 @@ public:
 
 	void calcOutputGradients(double targetVal);
 	void calcHiddenGradients(const vector<Neuron> &nextLayer);
+	void setHideGradient(double grad);
 	void updateInputWeight(vector <double> weight);
 	void updateInputWeight(double q);
 	void showNeuron();
+	void feedForward();
+	void feedForward(const vector<double> &prevLayer);
 	double calculateOutputValue();
 	static double activatorFun(double x);
 	static double derivativeActivatorFun(double x);
 	double gradient;
+	double outputValue;
 
 private:
 	static double randomWeight();
-	double outputValue;
+
 	
 };

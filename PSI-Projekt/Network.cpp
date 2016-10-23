@@ -11,6 +11,18 @@ Network::Network(vector<double> neuronsCount)
 		}
 		layers.push_back(layer);
 	}
+	for (int i = 0; i < layers.size() - 1; ++i)
+	{
+		Layer & layer = layers[i];
+		for (int j = 0; j < layers[i + 1].size(); ++j)
+		{
+			for (int k = 0; k < layers[i + 1][j].inputs.size(); ++k)
+			{
+				layers[i + 1][j].inputs[k].input = &layer[k];
+			}
+			
+		}
+	}
 }
 
 void Network::initializeInputs(vector<double> inputs, int numberOfLayer)
@@ -22,46 +34,57 @@ void Network::initializeInputs(vector<double> inputs, int numberOfLayer)
 			firstLayer[i].inputs[j].value = inputs[j];
 	}
 }
-
+//seems ok
 void Network::feedForward()
 {
-	for (int i = 0; i < layers.size(); i++)
+	for (unsigned i = 0; i < layers.size()-1; ++i) 
 	{
-		vector<double> nextInputs;
-		for (int j = 0; j < layers[i].size(); ++j)
+		Layer& layer = layers[i];
+		Layer& nextLayer = layers[i + 1];
+		unsigned num_neuron = (layer.size());
+		for (unsigned n = 0; n < num_neuron; ++n)
+			layer[n].feedForward();
+		for (int j = 0; j < nextLayer.size(); ++j)
 		{
-			layers[i][j].calculateOutputValue();
-			nextInputs.push_back(layers[i][j].getOutputValue());
+			for (int k = 0; k < nextLayer[j].inputs.size(); ++k)
+			{
+				nextLayer[j].inputs[k].value = layer[k].getOutputValue();
+			}
+			nextLayer[j].feedForward();
 		}
-		if(i + 1 < layers.size())
-			initializeInputs(nextInputs, i + 1);
+
 	}
 }
 
-void Network::backPropagation(vector<double> targetsVal)
+void Network::backPropagation(double targetsVal)
 {
 	Layer & outputLayer = layers.back();
 	for (int i = 0; i < outputLayer.size(); ++i)
 	{
-		double delta = targetsVal[i] - outputLayer[i].getOutputValue();
-		outputLayer[i].calcOutputGradients(targetsVal[i]);
+		double delta = targetsVal - outputLayer[i].getOutputValue();
+		outputLayer[i].calcOutputGradients(targetsVal);
 	}
 
 	for (int i = layers.size() - 2; i >= 0; --i)
 	{
 		Layer & hiddenLayer = layers[i];
 		Layer & nextLayer = layers[i + 1];
+		double sum = 0.0;
+		
 		for (int j = 0; j < hiddenLayer.size(); ++j)
+		{
 			hiddenLayer[j].calcHiddenGradients(nextLayer);
+		}
+			
 	}
-
-	for (int i = layers.size() - 1; i >= 0; --i)
+	double ni = 0.3;
+	for (int i = 0; i < layers.size(); ++i)
 	{
 		Layer & currentLayer = layers[i];
 		for (int j = 0; j < currentLayer.size(); ++j)
 		{
-			currentLayer[j].updateInputWeight(0.2);
+			currentLayer[j].updateInputWeight(ni);
+			
 		}
-			//currentLayer[j].updateInputWeight(targetsVal[j], 0.05);
 	}
 }

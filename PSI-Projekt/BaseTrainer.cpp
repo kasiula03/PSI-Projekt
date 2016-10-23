@@ -6,16 +6,15 @@ BaseTrainer::BaseTrainer(vector<vector<double>> neurons, vector<double> targetVa
 {
 	double ni = 0.05;
 	int inputCounter = neurons.back().size();
-
 	for (int i = 0; i < neurons.size(); i++)
 	{
-		showResult(neuron);
 		vector<double> inputs = neurons[i];
 		for (int j = 0; j < inputs.size(); j++)
 			neuron.inputs[j].value = inputs[j];
+		showResult(neuron);
 		vector<double> weights;
 		double output = neuron.calculateOutputValue();
-		double delta  = targetVal[i] - output;
+		double delta = targetVal[i] - output;
 
 		for (int j = 0; j < inputs.size(); j++)
 		{
@@ -39,9 +38,9 @@ BaseTrainer::BaseTrainer(vector<vector<double >> inputs, vector<double> targetVa
 		network.feedForward();
 		double delta = targetVal[i] - network.layers.back()[0].getOutputValue();
 		deltas.push_back(delta);
-		cout << delta << endl;
+		cout << "Blad" << 0.5 * delta * delta << endl;
 		//showResult(network);
-		network.backPropagation(targetVal);
+		network.backPropagation(targetVal[i]);
 	}
 	saveDelatasToCSV(deltas);
 }

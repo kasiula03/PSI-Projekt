@@ -17,13 +17,13 @@ using namespace std;
 int main()
 {
 	srand(time(NULL));
-	vector<double> vec{ 2,2,1 };
+	vector<double> vec{ 2, 7, 1 };
 	Network network(vec);
 	//network.initializeInputs(input, 0);
 	//network.feedForward();
 
 	//xor
-	vector<vector<double>> neurons;
+	/*vector<vector<double>> neurons;
 	vector<double> targetVal;
 	for (int i = 20000; i >= 0; --i)
 	{
@@ -41,60 +41,65 @@ int main()
 		neurons.push_back(neuron);
 		targetVal.push_back(t);
 	}
+	
 	BaseTrainer trainer(neurons, targetVal, network);
 	vector<double> inp = { 0,1 };
 	network.initializeInputs(inp, 0);
 	network.feedForward();
-	cout << "\nTest : " << inp[0] << " " << inp[1] << endl;
-	cout << "\n " << network.layers.back().back().getOutputValue();
+	cout << "\nTest : " << inp[0] << " " << inp[1] << "\t" << network.layers.back().back().getOutputValue();
 
 	inp = { 1,0 };
 	network.initializeInputs(inp, 0);
 	network.feedForward();
-	cout << "\nTest : " << inp[0] << " " << inp[1] << endl;
-	cout << "\n " << network.layers.back().back().getOutputValue();
+	cout << "\nTest : " << inp[0] << " " << inp[1] << "\t" << network.layers.back().back().getOutputValue();
+
 
 	inp = { 0,0 };
 	network.initializeInputs(inp, 0);
 	network.feedForward();
-	cout << "\nTest : " << inp[0] << " " << inp[1] << endl;
-	cout << "\n " << network.layers.back().back().getOutputValue();
+	cout << "\nTest : " << inp[0] << " " << inp[1] << "\t" << network.layers.back().back().getOutputValue();
+
 
 	inp = { 1,1 };
 	network.initializeInputs(inp, 0);
 	network.feedForward();
-	cout << "\nTest : " << inp[0] << " " << inp[1] << endl;
-	cout << "\n " << network.layers.back().back().getOutputValue();
-/*
+	cout << "\nTest : " << inp[0] << " " << inp[1] << "\t" << network.layers.back().back().getOutputValue();
+	*/
+	
 	vector<vector<double>> ANDneurons;
 	vector<double> ANDtargetVal;
 	Neuron neuronAND(2);
 	for (int i = 2000; i >= 0; --i)
 	{
 		int n1 = (int)(2.0 * rand() / double(RAND_MAX));
-		int n2 = (int)(2.0 * rand() / double(RAND_MAX));
-
-		int t = n1 & n2;
+		//int n2 = (int)(2.0 * rand() / double(RAND_MAX));
+		int n2 = 1;
+		int t = !n1;
 		vector<double> neuron;
 		neuron.push_back(n1);
 		neuron.push_back(n2);
+		
 		ANDneurons.push_back(neuron);
 		ANDtargetVal.push_back(t);
 	}
 
 	BaseTrainer trainerAND(ANDneurons, ANDtargetVal, neuronAND);
+
+	cout << "\n\n BRAMKA NOT \n\n";
 	neuronAND.inputs[0].value = 0;
-	neuronAND.inputs[1].value = 0;
-	cout << "\n" << neuronAND.calculateOutputValue();
+	//neuronAND.inputs[1].value = 0;
+	cout << "\n" << neuronAND.inputs[0].value <<  "\t" << neuronAND.calculateOutputValue();
 	neuronAND.inputs[0].value = 1;
-	neuronAND.inputs[1].value = 0;
-	cout << "\n" << neuronAND.calculateOutputValue();
-	neuronAND.inputs[0].value = 0;
+	//neuronAND.inputs[1].value = 0;
+	cout << "\n" << neuronAND.inputs[0].value <<  "\t" << neuronAND.calculateOutputValue();
+	cout << endl;
+	/*neuronAND.inputs[0].value = 0;
 	neuronAND.inputs[1].value = 1;
-	cout << "\n" << neuronAND.calculateOutputValue();
+	cout << "\n" << neuronAND.inputs[0].value << " " << neuronAND.inputs[1].value << "\t" << neuronAND.calculateOutputValue();
 	neuronAND.inputs[0].value = 1;
 	neuronAND.inputs[1].value = 1;
-	cout << "\n" << neuronAND.calculateOutputValue();*/
+	cout << "\n" << neuronAND.inputs[0].value << " " << neuronAND.inputs[1].value << "\t" << neuronAND.calculateOutputValue();
+	cout << endl;*/
 	system("pause");
 	return 0;
 }

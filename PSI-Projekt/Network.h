@@ -9,6 +9,6 @@ public:
 	Network(vector<double> neuronsCount);
 	void initializeInputs(vector<double> inputs, int numerOfLayer);
 	void feedForward();
-	void backPropagation(vector<double> targetsVal);
+	void backPropagation(double targetsVal);
 	vector<Layer> layers;
 };
