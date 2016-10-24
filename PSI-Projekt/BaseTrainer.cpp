@@ -1,27 +1,33 @@
 #include "BaseTrainer.h"
 #include <iostream>
 #include <fstream>
+#include <string>
+#include <algorithm>
 
 BaseTrainer::BaseTrainer(vector<vector<double>> neurons, vector<double> targetVal, Neuron & neuron)
 {
 	double ni = 0.05;
 	int inputCounter = neurons.back().size();
-	for (int i = 0; i < neurons.size(); i++)
+	double delta = 1;
+	while (abs(0.5 * delta * delta) > 0.00005)
 	{
-		vector<double> inputs = neurons[i];
-		for (int j = 0; j < inputs.size(); j++)
-			neuron.inputs[j].value = inputs[j];
-		showResult(neuron);
-		vector<double> weights;
-		double output = neuron.calculateOutputValue();
-		double delta = targetVal[i] - output;
-
-		for (int j = 0; j < inputs.size(); j++)
+		for (int i = 0; i < neurons.size(); i++)
 		{
-			double newWeight = neuron.inputs[j].weight + (ni * delta * inputs[j]);
-			weights.push_back(newWeight);
+			vector<double> inputs = neurons[i];
+			for (int j = 0; j < inputs.size(); j++)
+				neuron.inputs[j].value = inputs[j];
+			showResult(neuron);
+			vector<double> weights;
+			double output = neuron.calculateOutputValue();
+			delta = targetVal[i] - output;
+
+			for (int j = 0; j < inputs.size(); j++)
+			{
+				double newWeight = neuron.inputs[j].weight + (ni * delta * inputs[j]);
+				weights.push_back(newWeight);
+			}
+			neuron.updateInputWeight(weights);
 		}
-		neuron.updateInputWeight(weights);
 	}
 	
 }
@@ -31,18 +37,42 @@ BaseTrainer::BaseTrainer(vector<vector<double >> inputs, vector<double> targetVa
 	double ni = 0.05;
 	int inputCounter = inputs.back().size();
 	vector<double> deltas;
-	for (int i = 0; i < inputs.size(); i++)
+	double delta = 1;
+	int counter = 0;
+	while (abs(0.5 * delta * delta) > 0.0005)
 	{
-		vector<double> currentInputs = inputs[i];
-		network.initializeInputs(currentInputs, 0);
-		network.feedForward();
-		double delta = targetVal[i] - network.layers.back()[0].getOutputValue();
-		deltas.push_back(delta);
-		cout << "Blad" << 0.5 * delta * delta << endl;
-		//showResult(network);
-		network.backPropagation(targetVal[i]);
+		for (int i = 0; i < inputs.size(); i++)
+		{
+			vector<double> currentInputs = inputs[i];
+			network.initializeInputs(currentInputs, 0);
+			network.feedForward();
+			delta = targetVal[i] - network.layers.back()[0].getOutputValue();
+			deltas.push_back(delta);
+			cout << "Blad" << 0.5 * delta * delta << endl;
+			//showResult(network);
+			network.backPropagation(targetVal[i]);
+		}
+		if (counter % 10 == 0)
+		{
+			//testNetwork(inputs, targetVal, network);
+			errors.push_back(abs(0.5 * delta * delta));
+		}
+		counter++;
 	}
-	saveDelatasToCSV(deltas);
+	saveDelatasToCSV(errors);
+}
+
+void BaseTrainer::testNetwork(vector<vector<double>> inputs, vector<double> target, Network & network)
+{
+	for (int i = 0; i < inputs.size(); ++i)
+	{
+		vector<double> input = inputs[i];
+		network.initializeInputs(input, 0);
+		network.feedForward();
+		double delta = target[i] - network.layers.back().back().getOutputValue();
+	//	errors.push_back(delta);
+	}
+	
 }
 
 void BaseTrainer::saveDelatasToCSV(vector<double> deltas)
@@ -50,7 +80,9 @@ void BaseTrainer::saveDelatasToCSV(vector<double> deltas)
 	ofstream fout("deltas.csv");
 	for (int i = 0; i < deltas.size(); ++i)
 	{
-		fout << deltas[i] << "\n";
+		string s = to_string(deltas[i]);
+		replace(s.begin(), s.end(), '.', ',');
+		fout << s << "\n";
 	}
 	fout.close();
 }
@@ -84,15 +116,4 @@ void BaseTrainer::showResult(Network network)
 	}
 }
 
-void BaseTrainer::weigthTest(vector<Neuron> neurons, vector<double> targetVal)
-{
-	int inputCounter = neurons.back().inputs.size();
-	for (int i = 0; i < neurons.size(); i++)
-	{
-		double output = neurons[i].calculateOutputValue();
-		double delta = targetVal[i] - output;
-		if (delta > 0.05)
-			cout << "blad";
-	}
-}
 

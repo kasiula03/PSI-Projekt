@@ -56,11 +56,11 @@ void Neuron::feedForward(const vector<double> &prevLayer)
 
 double Neuron::activatorFun(double x)
 {
-	if (x >= 0.5f) return 1;
-	else return 0;
+	//if (x >= 0.5f) return 1;
+	//else return 0;
 
-	//double mian = 1 + exp(-x);
-	//return (1 / mian);
+	double mian = 1 + exp(-x);
+	return (1 / mian);
 	//return tanh(x);
 }
 
