@@ -119,12 +119,14 @@
   <ItemGroup>
     <ClInclude Include="BaseTrainer.h" />
     <ClInclude Include="Connection.h" />
+    <ClInclude Include="ImageConverter.h" />
     <ClInclude Include="Network.h" />
     <ClInclude Include="Neuron.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BaseTrainer.cpp" />
     <ClCompile Include="Connection.cpp" />
+    <ClCompile Include="ImageConverter.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Network.cpp" />
     <ClCompile Include="Neuron.cpp" />
