@@ -33,7 +33,7 @@ vector<Rect> ImageConverter::detectLetters(Mat img)
 	return boundRect;
 }
 
-int ImageConverter::prepareSamples(Mat img)
+vector<vector<float>> ImageConverter::prepareSamples(Mat img)
 {
 	Mat imgTrainingNumbers, imgGrayscale, imgBlurred, imgThresh, imgThreshCopy; 
 	imgTrainingNumbers = img;
@@ -41,15 +41,12 @@ int ImageConverter::prepareSamples(Mat img)
 	vector<Vec4i> v4iHierarchy; // declare contours hierarchy
 
 	Mat matTrainingImagesAsFlattenedFloats;
-	vector<int> intValidChars = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-		'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
-		'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-		'U', 'V', 'W', 'X', 'Y', 'Z' };
+	
 
 	if (imgTrainingNumbers.empty())
 	{
 		cout << "Error: image not exist! \n";
-		return 0;
+		return vector<vector<float>>();
 	}
 	cvtColor(imgTrainingNumbers, imgGrayscale, CV_BGR2GRAY); // convert to grayscale
 	GaussianBlur(imgGrayscale, imgBlurred, Size(5, 5), 0);
@@ -69,7 +66,7 @@ int ImageConverter::prepareSamples(Mat img)
 		CHAIN_APPROX_SIMPLE);
 	//imwrite("Thresh1.jpg", imgThresh);
 	//imwrite("Thresh2.jpg", imgThreshCopy);
-
+	vector<vector<float>> map;
 	for (int i = 0; i < ptContours.size(); ++i)
 	{
 		if (contourArea(ptContours[i]) > 100)
@@ -78,23 +75,51 @@ int ImageConverter::prepareSamples(Mat img)
 			rectangle(imgTrainingNumbers, boundRect, Scalar(0, 0, 255), 2);
 			Mat matPart = imgThresh(boundRect); // part of image
 			Mat matPartResized;
-			resize(matPart, matPartResized, Size(20, 30));
-			Mat matImageFloat;
-			matPartResized.convertTo(matImageFloat, CV_32FC1);
+			Mat binary;
+			resize(matPart, matPartResized, Size(20,30));
+			threshold(matPartResized, binary, 100, 255, THRESH_BINARY);
+			Mat matImageFloat = binary;
+			matPartResized.convertTo(matImageFloat, CV_32FC3);
 			Mat matImageFlattenedFloat = matImageFloat.reshape(1, 1);
-			matTrainingImagesAsFlattenedFloats.push_back(matImageFlattenedFloat);
+			matTrainingImagesAsFlattenedFloats.push_back(binary);
+			std::vector<float> array;
+			if (binary.isContinuous()) {
+				array.assign((float*)matImageFlattenedFloat.datastart, (float*)matImageFlattenedFloat.dataend);
+			}
+			else {
+				for (int i = 0; i < matImageFlattenedFloat.rows; ++i) {
+					array.insert(array.end(), (float*)matImageFlattenedFloat.ptr<uchar>(i), (float*)matImageFlattenedFloat.ptr<uchar>(i) + matImageFlattenedFloat.cols);
+				}
+			}
+			vector<float> vec;
+			matImageFlattenedFloat.row(0).copyTo(vec);
+			int m = 0;
+			for (int j = 0; j < 30; ++j)
+			{
+				for (int k = 0; k < 20; ++k)
+				{
+					if (vec[m] > 0)
+						vec[m] = 1;
+					else
+						vec[m] = -1;
+					m++;
+				}
+			}
+			map.push_back(vec);
 		}
 	}
 	cv::FileStorage fsTrainingImages("images.xml", cv::FileStorage::WRITE);         // open the training images file
-
+	
 	if (fsTrainingImages.isOpened() == false) {                                                 // if the file was not opened successfully
 		std::cout << "error, unable to open training images file, exiting program\n\n";         // show error message
-		return(0);                                                                              // and exit program
+		return vector<vector<float>>();                                                                              // and exit program
 	}
 
 	fsTrainingImages << "images" << matTrainingImagesAsFlattenedFloats;         // write training images into images section of images file
 	fsTrainingImages.release();
-	return 0;
+
+	
+	return map;
 }
 
 vector<Rect> ImageConverter::detectLetters2(Mat img)

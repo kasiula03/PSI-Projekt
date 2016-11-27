@@ -15,18 +15,22 @@ public:
 	inline double getOutputValue() const { return outputValue; }
 
 	void calcOutputGradients(double targetVal);
-	void calcHiddenGradients(const vector<Neuron> &nextLayer);
-	void setHideGradient(double grad);
+	void calcHiddenGradients(vector<Neuron> &nextLayer);
 	void updateInputWeight(vector <double> weight);
 	void updateInputWeight(double q);
 	void showNeuron();
 	void feedForward();
 	void feedForward(const vector<double> &prevLayer);
 	double calculateOutputValue();
-	static double activatorFun(double x);
-	static double derivativeActivatorFun(double x);
+
 	double gradient;
 	double outputValue;
+
+	// activator function
+	static double(*activator)(double x);
+	static double(*derivativeActivator)(double x);
+	static double activatorFun(double x);
+	static double derivativeActivatorFun(double x);
 
 private:
 	static double randomWeight();

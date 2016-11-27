@@ -9,6 +9,7 @@ BaseTrainer::BaseTrainer(vector<vector<double>> neurons, vector<double> targetVa
 	double ni = 0.05;
 	int inputCounter = neurons.back().size();
 	double delta = 1;
+	
 	while (abs(0.5 * delta * delta) > 0.0005)
 	{
 		for (int i = 0; i < neurons.size(); i++)
@@ -39,6 +40,7 @@ BaseTrainer::BaseTrainer(vector<vector<double >> inputs, vector<double> targetVa
 	vector<double> deltas;
 	double delta = 1;
 	int counter = 0;
+
 	while (abs(0.5 * delta * delta) > 0.005)
 	{
 		for (int i = 0; i < inputs.size(); i++)

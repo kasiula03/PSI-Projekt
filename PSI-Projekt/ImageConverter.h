@@ -7,5 +7,5 @@ class ImageConverter
 public:
 	std::vector<cv::Rect> detectLetters(cv::Mat img);
 	std::vector<cv::Rect> detectLetters2(cv::Mat img);
-	int prepareSamples(cv::Mat img);
+	std::vector<std::vector<float>> prepareSamples(cv::Mat img);
 };

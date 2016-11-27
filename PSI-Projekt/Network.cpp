@@ -46,9 +46,10 @@ void Network::feedForward()
 			layer[n].feedForward();
 		for (int j = 0; j < nextLayer.size(); ++j)
 		{
+			Neuron & neuron = nextLayer[j];
 			for (int k = 0; k < nextLayer[j].inputs.size(); ++k)
 			{
-				nextLayer[j].inputs[k].value = layer[k].getOutputValue();
+				neuron.inputs[k].value = layer[k].getOutputValue();
 			}
 			nextLayer[j].feedForward();
 		}
@@ -86,5 +87,34 @@ void Network::backPropagation(double targetsVal)
 			currentLayer[j].updateInputWeight(ni);
 			
 		}
+	}
+}
+
+void Network::backPropagation(vector<double> targetsVal)
+{
+	Layer & outputLayer = layers.back();
+	for (int i = 0; i < outputLayer.size(); ++i)
+	{
+		double delta = targetsVal[i] - outputLayer[i].getOutputValue();
+		outputLayer[i].calcOutputGradients(targetsVal[i]);
+	}
+
+	for (int i = layers.size() - 2; i >= 0; --i)
+	{
+		Layer & hiddenLayer = layers[i];
+		Layer & nextLayer = layers[i + 1];
+		double sum = 0.0;
+
+		for (int j = 0; j < hiddenLayer.size(); ++j)
+			hiddenLayer[j].calcHiddenGradients(nextLayer);
+		
+
+	}
+	double ni = 0.3;
+	for (int i = 0; i < layers.size(); ++i)
+	{
+		Layer & currentLayer = layers[i];
+		for (int j = 0; j < currentLayer.size(); ++j)
+			currentLayer[j].updateInputWeight(ni);
 	}
 }

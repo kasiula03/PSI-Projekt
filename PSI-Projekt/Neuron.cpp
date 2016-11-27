@@ -1,8 +1,11 @@
 #include "Neuron.h"
 #include <iostream>
-#include <cmath>
+
 
 using namespace std;
+
+double(*Neuron::activator)(double x);
+double(*Neuron::derivativeActivator)(double x);
 
 Neuron::Neuron(unsigned inputSize)
 {
@@ -41,34 +44,21 @@ void Neuron::feedForward()
 	{
 		sum += inputs[i].value * inputs[i].weight;
 	}
-	outputValue = Neuron::activatorFun(sum);
+	outputValue = sum;
 }
 
-void Neuron::feedForward(const vector<double> &prevLayer)
-{
-	double sum = 0.0;
-	for (int i = 0; i < prevLayer.size(); ++i)
-	{
-		sum += prevLayer[i] * inputs[i].weight;
-	}
-	outputValue = Neuron::activatorFun(sum);
-}
 
 double Neuron::activatorFun(double x)
 {
-	//if (x >= 0.5f) return 1;
-	//else return 0;
-
-	double mian = 1 + exp(-x);
-	return (1 / mian);
-	//return tanh(x);
+	return activator(x);
 }
 
 double Neuron::derivativeActivatorFun(double x)
 {
-	return Neuron::activatorFun(x)*(1 - Neuron::activatorFun(x));
-	//return (1.0 - x*x);
+	return derivativeActivator(x);
 }
+
+
 
 void Neuron::updateInputWeight(vector <double> weight)
 {
@@ -80,7 +70,7 @@ void Neuron::updateInputWeight(vector <double> weight)
 
 double Neuron::randomWeight()
 {
-	return (double)rand() / RAND_MAX;
+	return double(rand() % 200 - 100) / 100;
 }
 
 double Neuron::calculateOutputValue()
@@ -91,27 +81,28 @@ double Neuron::calculateOutputValue()
 		Connection connection = inputs[i];
 		sum += (connection.weight * connection.value);
 	}
-	this->outputValue = activatorFun(sum);
+	this->outputValue = sum;
 	return outputValue;
 }
 
 void Neuron::calcOutputGradients(double targetVal)
 {
 	double delta = targetVal - outputValue;
-	//gradient = delta * Neuron::derivativeActivatorFun(outputValue);
 	gradient = delta;
 }
 
-void Neuron::calcHiddenGradients(const vector<Neuron> &nextLayer)
+void Neuron::calcHiddenGradients(vector<Neuron> &nextLayer)
 {
 	double sum = 0.0;
 	for (int i = 0; i < nextLayer.size(); i++)
 	{
-		for (int j = 0; j < nextLayer[i].inputs.size(); ++j)
+		Neuron & neuron = nextLayer[i];
+		for (int j = 0; j < neuron.inputs.size(); ++j)
 		{
-			if (nextLayer[i].inputs[j].input == this)
+			Connection & con = neuron.inputs[j];
+			if (con.input == this)
 			{
-				sum += (nextLayer[i].inputs[j].weight * nextLayer[i].gradient);
+				sum += (con.weight * neuron.gradient);
 			}
 		}
 		
@@ -130,7 +121,7 @@ void Neuron::updateInputWeight(double q)
 	}
 	for (int i = 0; i < inputs.size(); ++i)
 	{
-		double deltaWeight = q * gradient * Neuron::derivativeActivatorFun(sum) * inputs[i].value;
+		double deltaWeight = q * getOutputValue() * inputs[i].value;
 		inputs[i].weight += deltaWeight;
 	}
 }

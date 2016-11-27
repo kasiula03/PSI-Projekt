@@ -10,5 +10,6 @@ public:
 	void initializeInputs(vector<double> inputs, int numerOfLayer);
 	void feedForward();
 	void backPropagation(double targetsVal);
+	void backPropagation(vector<double> targetsVal);
 	vector<Layer> layers;
 };
