@@ -85,7 +85,6 @@ void Network::backPropagation(double targetsVal)
 		for (int j = 0; j < currentLayer.size(); ++j)
 		{
 			currentLayer[j].updateInputWeight(ni);
-			
 		}
 	}
 }
@@ -104,7 +103,6 @@ void Network::backPropagation(vector<double> targetsVal)
 		Layer & hiddenLayer = layers[i];
 		Layer & nextLayer = layers[i + 1];
 		double sum = 0.0;
-
 		for (int j = 0; j < hiddenLayer.size(); ++j)
 			hiddenLayer[j].calcHiddenGradients(nextLayer);
 		

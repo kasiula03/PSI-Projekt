@@ -19,8 +19,6 @@ Neuron::Neuron(unsigned inputSize)
 	
 }
 
-
-
 void Neuron::showNeuron()
 {
 	cout << "Weights: ";
@@ -39,14 +37,8 @@ void Neuron::showNeuron()
 
 void Neuron::feedForward()
 {
-	double sum = 0.0;
-	for (int i = 0; i < inputs.size(); ++i)
-	{
-		sum += inputs[i].value * inputs[i].weight;
-	}
-	outputValue = sum;
+	calculateOutputValue();
 }
-
 
 double Neuron::activatorFun(double x)
 {
@@ -70,7 +62,7 @@ void Neuron::updateInputWeight(vector <double> weight)
 
 double Neuron::randomWeight()
 {
-	return double(rand() % 200 - 100) / 100;
+	return (double(rand() % 200) - 100) / 100;
 }
 
 double Neuron::calculateOutputValue()
@@ -78,10 +70,11 @@ double Neuron::calculateOutputValue()
 	double sum = 0.0;
 	for (int i = 0; i < inputs.size(); i++)
 	{
-		Connection connection = inputs[i];
+		Connection & connection = inputs[i];
 		sum += (connection.weight * connection.value);
+		
 	}
-	this->outputValue = sum;
+	this->outputValue = activator(sum);
 	return outputValue;
 }
 
@@ -105,8 +98,6 @@ void Neuron::calcHiddenGradients(vector<Neuron> &nextLayer)
 				sum += (con.weight * neuron.gradient);
 			}
 		}
-		
-		
 	}
 	//gradient = sum * Neuron::derivativeActivatorFun(outputValue);
 	gradient = sum;
@@ -121,7 +112,7 @@ void Neuron::updateInputWeight(double q)
 	}
 	for (int i = 0; i < inputs.size(); ++i)
 	{
-		double deltaWeight = q * getOutputValue() * inputs[i].value;
+		double deltaWeight = q * gradient * derivativeActivator(sum) * inputs[i].value;
 		inputs[i].weight += deltaWeight;
 	}
 }

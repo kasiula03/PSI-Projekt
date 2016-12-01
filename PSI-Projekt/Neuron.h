@@ -20,7 +20,6 @@ public:
 	void updateInputWeight(double q);
 	void showNeuron();
 	void feedForward();
-	void feedForward(const vector<double> &prevLayer);
 	double calculateOutputValue();
 
 	double gradient;

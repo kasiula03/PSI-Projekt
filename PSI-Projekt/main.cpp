@@ -34,8 +34,6 @@ int main()
 		{
 			if (im[m] > 0)
 				im[m] = 1;
-			else
-				im[m] = -1;
 			cout << im[m];
 			m++;
 		}
@@ -48,8 +46,6 @@ int main()
 		{
 			if (im2[m] > 0)
 				im2[m] = 1;
-			else
-				im2[m] = -1;
 			cout << im2[m];
 			m++;
 		}
@@ -84,14 +80,14 @@ int main()
 			if (map[i][j] > 0)
 				each.push_back(1);
 			else
-				each.push_back(-1);
+				each.push_back(0);
 		}
 		normalized.push_back(each);
 	}
 	vector<vector<double>> targets = parseOutputVal();
 	double inputsSize = normalized[0].size();
 	double outputsSize = targets[0].size();
-	vector<double> vec{inputsSize, sqrt(inputsSize), outputsSize };
+	vector<double> vec{inputsSize, sqrt(inputsSize*outputsSize), outputsSize };
 	Network network(vec);
 	MultipleOutputTrainer multipleTrainer(normalized, targets, network);
 	
@@ -267,7 +263,7 @@ vector<vector<double>> parseOutputVal()
 				if (i == j)
 					each.push_back(1);
 				else
-					each.push_back(-1);
+					each.push_back(0);
 			}
 			outputs.push_back(each);
 		}
