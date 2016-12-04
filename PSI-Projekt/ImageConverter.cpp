@@ -33,7 +33,7 @@ vector<Rect> ImageConverter::detectLetters(Mat img)
 	return boundRect;
 }
 
-vector<vector<float>> ImageConverter::prepareSamples(Mat img)
+vector<vector<double>> ImageConverter::prepareSamples(Mat img)
 {
 	Mat imgTrainingNumbers, imgGrayscale, imgBlurred, imgThresh, imgThreshCopy; 
 	imgTrainingNumbers = img;
@@ -46,7 +46,7 @@ vector<vector<float>> ImageConverter::prepareSamples(Mat img)
 	if (imgTrainingNumbers.empty())
 	{
 		cout << "Error: image not exist! \n";
-		return vector<vector<float>>();
+		return vector<vector<double>>();
 	}
 	cvtColor(imgTrainingNumbers, imgGrayscale, CV_BGR2GRAY); // convert to grayscale
 	GaussianBlur(imgGrayscale, imgBlurred, Size(5, 5), 0);
@@ -66,7 +66,7 @@ vector<vector<float>> ImageConverter::prepareSamples(Mat img)
 		CHAIN_APPROX_SIMPLE);
 	//imwrite("Thresh1.jpg", imgThresh);
 	//imwrite("Thresh2.jpg", imgThreshCopy);
-	vector<vector<float>> map;
+	vector<vector<double>> map;
 	for (int i = 0; i < ptContours.size(); ++i)
 	{
 		if (contourArea(ptContours[i]) > 100)
@@ -91,7 +91,7 @@ vector<vector<float>> ImageConverter::prepareSamples(Mat img)
 					array.insert(array.end(), (float*)matImageFlattenedFloat.ptr<uchar>(i), (float*)matImageFlattenedFloat.ptr<uchar>(i) + matImageFlattenedFloat.cols);
 				}
 			}
-			vector<float> vec;
+			vector<double> vec;
 			matImageFlattenedFloat.row(0).copyTo(vec);
 			int m = 0;
 			for (int j = 0; j < 30; ++j)
@@ -101,7 +101,7 @@ vector<vector<float>> ImageConverter::prepareSamples(Mat img)
 					if (vec[m] > 0)
 						vec[m] = 1;
 					else
-						vec[m] = -1;
+						vec[m] = 0;
 					m++;
 				}
 			}
@@ -112,13 +112,12 @@ vector<vector<float>> ImageConverter::prepareSamples(Mat img)
 	
 	if (fsTrainingImages.isOpened() == false) {                                                 // if the file was not opened successfully
 		std::cout << "error, unable to open training images file, exiting program\n\n";         // show error message
-		return vector<vector<float>>();                                                                              // and exit program
+		return vector<vector<double>>();                                                                              // and exit program
 	}
 
 	fsTrainingImages << "images" << matTrainingImagesAsFlattenedFloats;         // write training images into images section of images file
 	fsTrainingImages.release();
 
-	
 	return map;
 }
 

@@ -13,14 +13,14 @@ MultipleOutputTrainer::MultipleOutputTrainer(vector<vector<double>> inputs, vect
 	vector<double> currentInputs = inputs[0];
 	network.initializeInputs(currentInputs, 0);
 	network.feedForward();
-
-	while (!ifErrorsSmallEnought(inputs,targetVal, network, 0.2))
+	
+	while (counter < 70)
 	{
 		typedef std::chrono::high_resolution_clock Time;
 		typedef std::chrono::milliseconds ms;
 		typedef std::chrono::duration<float> fsec;
 		auto t0 = Time::now();
-	
+		
 		for (int i = 0; i < inputs.size(); i++)
 		{
 			vector<double> currentInputs = inputs[i];
@@ -35,7 +35,8 @@ MultipleOutputTrainer::MultipleOutputTrainer(vector<vector<double>> inputs, vect
 			//deltas.push_back(delta);
 			
 			//showResult(network);
-			network.backPropagation(targetVal[i]);
+		
+			network.backPropagation(targetVal[i]); 
 		}
 		auto t1 = Time::now();
 		fsec fs = t1 - t0;
@@ -48,18 +49,17 @@ MultipleOutputTrainer::MultipleOutputTrainer(vector<vector<double>> inputs, vect
 bool MultipleOutputTrainer::ifErrorsSmallEnought(vector<vector<double>> inputs, vector<vector<double>> targetVal, Network & network, double error)
 {
 
-	for (int i = 0; i < inputs.size(); ++i)
+	double delta = 0;
+	for (vector<double> eachTarget : targetVal) 
 	{
-		double delta = 0;
-		for (int j = 0; j < targetVal[i].size(); ++j)
+		for (int j = 0; j < eachTarget.size(); ++j)
 		{
-			delta += pow(targetVal[i][j] - network.layers.back()[j].getOutputValue(), 2);
+			delta += pow(eachTarget[j] - network.layers.back()[j].getOutputValue(), 2);
 			if (0.5*delta > error)
 			{
 				cout << "\n delta: " << 0.5*delta << endl;
 				return false;
 			}
-				
 		}
 	}
 	return true;

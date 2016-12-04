@@ -9,6 +9,7 @@ public:
 	Network(vector<double> neuronsCount);
 	void initializeInputs(vector<double> inputs, int numerOfLayer);
 	void feedForward();
+	void hebbLearn();
 	void backPropagation(double targetsVal);
 	void backPropagation(vector<double> targetsVal);
 	vector<Layer> layers;

@@ -11,9 +11,10 @@ public:
 	void testNetwork(vector<vector<double>>, vector<double>, Network &);
 	void showResult(const Neuron & neuron);
 	void showResult(Network network);
+	static void saveDelatasToCSV(vector<double>);
 private:
 	vector<layer> net;
 	vector<double> errors;
-	static void saveDelatasToCSV(vector<double>);
+
 	double ni = 0.05;
 };

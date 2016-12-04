@@ -16,6 +16,7 @@ public:
 
 	void calcOutputGradients(double targetVal);
 	void calcHiddenGradients(vector<Neuron> &nextLayer);
+	void updateHebbInputWeight(double q);
 	void updateInputWeight(vector <double> weight);
 	void updateInputWeight(double q);
 	void showNeuron();

@@ -18,14 +18,32 @@ using namespace std;
 
 void xor();
 vector<vector<double>> parseOutputVal();
+Network * Hebb(vector<vector<double>> inputs);
 vector<double> getImgAsFloats(Mat image);
 
 int main()
 {
 	srand(time(NULL));
+	Neuron::activator = ActivatorFunctions::sigmoid;
+	Mat trainingSample = cv::imread("0sample.png");
 	Mat img1 = cv::imread("test_letter.png");
-	Mat img2 = cv::imread("test_letter2.png");
+	Mat img2 = cv::imread("test_letter0.png");
+
 	vector<double> im = getImgAsFloats(img1);
+	vector<double> im2 = getImgAsFloats(img2);
+
+	ImageConverter converter;
+	vector<vector<double>> map = converter.prepareSamples(trainingSample);
+	Network * net = Hebb(map);
+	net->initializeInputs(im, 0);
+	net->feedForward();
+	cout << "Result: " << net->layers.back().back().getOutputValue() << endl;
+
+	net->initializeInputs(im2, 0);
+	net->feedForward();
+	cout << "Result: " << net->layers.back().back().getOutputValue() << endl;
+
+	/*vector<double> im = getImgAsFloats(img1);
 	vector<double> im2 = getImgAsFloats(img2);
 	int m = 0;
 	for (int j = 0; j < 30; ++j)
@@ -54,8 +72,8 @@ int main()
 	Neuron::activator = ActivatorFunctions::sigmoid;
 	Neuron::derivativeActivator = ActivatorFunctions::derivativeSigmoid;
 	ImageConverter converter;
-	Mat traingImg = imread("training_chars.png");
-	vector<vector<float>> map = converter.prepareSamples(traingImg);
+	Mat traingImg = imread("training_chars0.png");
+	vector<vector<double>> map = converter.prepareSamples(traingImg);
 	
 	for (int i = 0; i < map.size(); ++i)
 	{
@@ -71,41 +89,49 @@ int main()
 		}
 		cout << endl;
 	}
-	vector<vector<double>> normalized;
-	for (int i = 0; i < map.size(); ++i)
-	{
-		vector<double> each;
-		for (int j = 0; j < map[i].size(); ++j)
-		{
-			if (map[i][j] > 0)
-				each.push_back(1);
-			else
-				each.push_back(0);
-		}
-		normalized.push_back(each);
-	}
+	
 	vector<vector<double>> targets = parseOutputVal();
-	double inputsSize = normalized[0].size();
+	double inputsSize = map[0].size();
 	double outputsSize = targets[0].size();
 	vector<double> vec{inputsSize, sqrt(inputsSize*outputsSize), outputsSize };
 	Network network(vec);
-	MultipleOutputTrainer multipleTrainer(normalized, targets, network);
+	MultipleOutputTrainer multipleTrainer(map, targets, network);
 	
 
 	network.initializeInputs(im, 0);
 	network.feedForward();
-	Layer & outputLayer = network.layers.back();
+	Layer & outputLayer = network.layers[1];
 	cout << "\n\n\nResults\n\n";
+	m = 0;
+	for (int j = 0; j < 30; ++j)
+	{
+		for (int k = 0; k < 20; ++k)
+		{
+			cout << im[m];
+			m++;
+		}
+		cout << endl;
+	}
 	for (int i = 0; i < outputLayer.size(); ++i)
-		cout << i << "\t" << outputLayer[i].getOutputValue() << endl;
+		cout << "neuron: " << i << "\t" << outputLayer[i].getOutputValue() << endl;
 	
 
 	network.initializeInputs(im2, 0);
 	network.feedForward();
-	outputLayer = network.layers.back();
+	outputLayer = network.layers[1];
 	cout << "\n\n\nResults\n\n";
+	m = 0;
+	for (int j = 0; j < 30; ++j)
+	{
+		for (int k = 0; k < 20; ++k)
+		{
+			cout << im2[m];
+			m++;
+		}
+		cout << endl;
+	}
 	for (int i = 0; i < outputLayer.size(); ++i)
-		cout << i << "\t" << outputLayer[i].getOutputValue() << endl;
+		cout << "neuron: " << i << "\t" << outputLayer[i].getOutputValue() << endl;*/
 	/*cv::Mat img1 = cv::imread("test.jpg");
 	cv::resize(img1, img1, cv::Size(), 2, 2);
 	//Detect
@@ -250,24 +276,10 @@ vector<double> getImgAsFloats(Mat image)
 
 vector<vector<double>> parseOutputVal()
 {
-	vector<int> intValidChars = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+	vector<int> intValidChars = { '0', '1' };
 
-	vector<vector<double>> outputs;
-	for (int k = 0; k < 5; ++k)
-	{
-		for (int i = 0; i < intValidChars.size(); ++i)
-		{
-			vector<double> each;
-			for (int j = 0; j < intValidChars.size(); ++j)
-			{
-				if (i == j)
-					each.push_back(1);
-				else
-					each.push_back(0);
-			}
-			outputs.push_back(each);
-		}
-	}
+	vector<vector<double>> outputs = { {0,1}, {1,0}, {1,0}, {0,1}, {0,1}, {0,1}, {1,0}, {1,0},{0,1}, {1,0} };
+	
 	
 	return outputs;
 }
@@ -305,4 +317,29 @@ void xor()
 	network.initializeInputs(inp, 0);
 	network.feedForward();
 	cout << "\nTest : " << inp[0] << " " << inp[1] << "\t" << network.layers.back().back().getOutputValue();
+}
+
+Network * Hebb(vector<vector<double>> inputs)
+{
+	int counter = 0;
+	Network * network = new Network({ 600, 1 });
+	vector<double> results;
+	while (counter < 20)
+	{
+		for (vector<double> input : inputs)
+		{
+			network->initializeInputs(input, 0);
+			for (Neuron & neuron : network->layers[0])
+			{
+				neuron.calculateOutputValue();
+			}
+			network->hebbLearn();
+			results.push_back(network->layers.back().back().getOutputValue());
+			cout << "Value: " << network->layers.back().back().getOutputValue() << endl;
+		}
+		counter++;
+	}
+	BaseTrainer::saveDelatasToCSV(results);
+	
+	return network;
 }
