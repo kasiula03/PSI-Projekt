@@ -24,7 +24,7 @@ vector<double> getImgAsFloats(Mat image);
 int main()
 {
 	srand(time(NULL));
-	Neuron::activator = ActivatorFunctions::sigmoid;
+	/*Neuron::activator = ActivatorFunctions::sigmoid;
 	Mat trainingSample = cv::imread("0sample.png");
 	Mat img1 = cv::imread("test_letter.png");
 	Mat img2 = cv::imread("test_letter0.png");
@@ -41,9 +41,10 @@ int main()
 
 	net->initializeInputs(im2, 0);
 	net->feedForward();
-	cout << "Result: " << net->layers.back().back().getOutputValue() << endl;
-
-	/*vector<double> im = getImgAsFloats(img1);
+	cout << "Result: " << net->layers.back().back().getOutputValue() << endl;*/
+	Mat img1 = cv::imread("test_letter.png");
+	Mat img2 = cv::imread("test_letter0.png");
+	vector<double> im = getImgAsFloats(img1);
 	vector<double> im2 = getImgAsFloats(img2);
 	int m = 0;
 	for (int j = 0; j < 30; ++j)
@@ -131,7 +132,7 @@ int main()
 		cout << endl;
 	}
 	for (int i = 0; i < outputLayer.size(); ++i)
-		cout << "neuron: " << i << "\t" << outputLayer[i].getOutputValue() << endl;*/
+		cout << "neuron: " << i << "\t" << outputLayer[i].getOutputValue() << endl;
 	/*cv::Mat img1 = cv::imread("test.jpg");
 	cv::resize(img1, img1, cv::Size(), 2, 2);
 	//Detect
