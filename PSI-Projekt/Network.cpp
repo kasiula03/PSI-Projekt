@@ -1,4 +1,7 @@
 #include "Network.h"
+#include <sstream>
+#include <fstream>
+#include <chrono>
 
 Network::Network(vector<double> neuronsCount)
 {
@@ -101,10 +104,70 @@ void Network::backPropagation(vector<double> targetsVal)
 	}
 }
 
-void Network::hebbLearn()
+void Network::saveWeights()
 {
-	for (Neuron & neuron : this->layers[0])
+	auto t0 = std::chrono::system_clock::now();
+	time_t time = std::chrono::system_clock::to_time_t(t0);
+	stringstream ss;
+	ss << time;
+	string timeS = ss.str();
+	string fileName = "weights_" + timeS + ".txt";
+	int counter = 0;
+	fstream file(fileName, ios::out);
+	for (Layer layer : layers)
 	{
-		neuron.updateHebbInputWeight(0.01);
+		file << "layer_neurons: " << to_string(layer.size()) << endl;
+		for (Neuron neuron : layer)
+		{
+			file << "inputs: " << neuron.inputs.size() << endl;
+			for (Connection connection : neuron.inputs)
+			{
+				file << to_string(connection.weight) << endl;
+			}
+		}
 	}
+
+	file.close();
+}
+
+void Network::loadNetwork(string fileName)
+{
+	vector<double> layersSize;
+	vector<vector<double>> weights;
+	fstream file(fileName, ios::in);
+	int layerNumber = 0;
+	int layerSize = 0;
+	int counter = 0;
+	int inputSize = 0;
+	string line;
+	file >> line;
+	while(!file.eof())
+	{
+		
+		if (line == "layer_neurons:")
+		{
+			counter = 0;
+			string next;
+			file >> next;
+			layerSize = atof(next.c_str());
+			layerNumber++;
+			file >> line;
+		}
+		
+		if (line == "inputs:")
+		{
+			file >> line;
+			inputSize = atoi(line.c_str());
+			string value;
+			for (int i = 0; i < inputSize; i++)
+			{
+				file >> value;
+				double val = atof(value.c_str());
+				layers[layerNumber - 1][counter].inputs[i].weight = val;
+			}
+			file >> line;
+			counter++;
+		}
+	}
+	file.close();
 }

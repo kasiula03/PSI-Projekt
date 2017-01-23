@@ -5,7 +5,8 @@
 class ImageConverter
 {
 public:
-	std::vector<cv::Rect> detectLetters(cv::Mat img);
-	std::vector<cv::Rect> detectLetters2(cv::Mat img);
-	std::vector<std::vector<double>> prepareSamples(cv::Mat img);
+	static std::vector<cv::Rect> detectLetters(cv::Mat img);
+	static std::vector<cv::Rect> detectLetters2(cv::Mat img);
+	static std::vector<std::vector<double>> prepareSamples(cv::Mat img);
+	static std::vector<std::pair<cv::Rect,std::vector<double>>> prepareImg(cv::Mat img);
 };

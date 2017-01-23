@@ -27,8 +27,6 @@ vector<Rect> ImageConverter::detectLetters(Mat img)
 				boundRect.push_back(appRect);
 		}
 	}
-	
-	
 
 	return boundRect;
 }
@@ -41,7 +39,7 @@ vector<vector<double>> ImageConverter::prepareSamples(Mat img)
 	vector<Vec4i> v4iHierarchy; // declare contours hierarchy
 
 	Mat matTrainingImagesAsFlattenedFloats;
-	
+	vector<Rect> bounds;
 
 	if (imgTrainingNumbers.empty())
 	{
@@ -58,6 +56,7 @@ vector<vector<double>> ImageConverter::prepareSamples(Mat img)
 		11,								// size of a pixel neighborhood used to calculate threshold value
 		2
 		);
+	
 	imgThreshCopy = imgThresh.clone();
 	findContours(imgThreshCopy,
 		ptContours,
@@ -72,11 +71,13 @@ vector<vector<double>> ImageConverter::prepareSamples(Mat img)
 		if (contourArea(ptContours[i]) > 100)
 		{
 			Rect boundRect = boundingRect(ptContours[i]);
+
 			rectangle(imgTrainingNumbers, boundRect, Scalar(0, 0, 255), 2);
 			Mat matPart = imgThresh(boundRect); // part of image
+			imwrite("part"+ to_string(i) + ".png", matPart);
 			Mat matPartResized;
 			Mat binary;
-			resize(matPart, matPartResized, Size(20,30));
+			resize(matPart, matPartResized, Size(14,21));
 			threshold(matPartResized, binary, 100, 255, THRESH_BINARY);
 			Mat matImageFloat = binary;
 			matPartResized.convertTo(matImageFloat, CV_32FC3);
@@ -94,9 +95,9 @@ vector<vector<double>> ImageConverter::prepareSamples(Mat img)
 			vector<double> vec;
 			matImageFlattenedFloat.row(0).copyTo(vec);
 			int m = 0;
-			for (int j = 0; j < 30; ++j)
+			for (int j = 0; j < 21; ++j)
 			{
-				for (int k = 0; k < 20; ++k)
+				for (int k = 0; k < 14; ++k)
 				{
 					if (vec[m] > 0)
 						vec[m] = 1;
@@ -113,6 +114,98 @@ vector<vector<double>> ImageConverter::prepareSamples(Mat img)
 	if (fsTrainingImages.isOpened() == false) {                                                 // if the file was not opened successfully
 		std::cout << "error, unable to open training images file, exiting program\n\n";         // show error message
 		return vector<vector<double>>();                                                                              // and exit program
+	}
+
+	fsTrainingImages << "images" << matTrainingImagesAsFlattenedFloats;         // write training images into images section of images file
+	fsTrainingImages.release();
+
+	return map;
+}
+
+std::vector<std::pair<cv::Rect, std::vector<double>>> ImageConverter::prepareImg(cv::Mat img)
+{
+	Mat imgTrainingNumbers, imgGrayscale, imgBlurred, imgThresh, imgThreshCopy;
+	imgTrainingNumbers = img;
+	vector<vector<Point>> ptContours; // declare contours vector
+	vector<Vec4i> v4iHierarchy; // declare contours hierarchy
+
+	Mat matTrainingImagesAsFlattenedFloats;
+	vector<Rect> bounds;
+
+	if (imgTrainingNumbers.empty())
+	{
+		cout << "Error: image not exist! \n";
+		return std::vector<std::pair<cv::Rect, std::vector<double>>>();
+	}
+	cvtColor(imgTrainingNumbers, imgGrayscale, CV_BGR2GRAY); // convert to grayscale
+	GaussianBlur(imgGrayscale, imgBlurred, Size(5, 5), 0);
+	adaptiveThreshold(imgBlurred,
+		imgThresh,
+		255,							// make pixels that pass the threshold full white
+		ADAPTIVE_THRESH_GAUSSIAN_C,
+		THRESH_BINARY_INV,				// invert so foreground will be white, background will be black
+		11,								// size of a pixel neighborhood used to calculate threshold value
+		2
+		);
+	imwrite("testTHRE.png", imgThresh);
+	imgThreshCopy = imgThresh.clone();
+	findContours(imgThreshCopy,
+		ptContours,
+		v4iHierarchy,
+		RETR_EXTERNAL,
+		CHAIN_APPROX_SIMPLE);
+	//imwrite("Thresh1.jpg", imgThresh);
+	//imwrite("Thresh2.jpg", imgThreshCopy);
+	std::vector<std::pair<cv::Rect, std::vector<double>>> map;
+	for (int i = 0; i < ptContours.size(); ++i)
+	{
+		if (contourArea(ptContours[i]) > 100)
+		{
+			Rect boundRect = boundingRect(ptContours[i]);
+
+			rectangle(imgTrainingNumbers, boundRect, Scalar(0, 0, 255), 2);
+			Mat matPart = imgThresh(boundRect); // part of image
+			imwrite("part" + to_string(i) + ".png", matPart);
+			Mat matPartResized;
+			Mat binary;
+			resize(matPart, matPartResized, Size(14, 21));
+			threshold(matPartResized, binary, 100, 255, THRESH_BINARY);
+			Mat matImageFloat = binary;
+			matPartResized.convertTo(matImageFloat, CV_32FC3);
+			Mat matImageFlattenedFloat = matImageFloat.reshape(1, 1);
+			matTrainingImagesAsFlattenedFloats.push_back(binary);
+			std::vector<float> array;
+			if (binary.isContinuous()) {
+				array.assign((float*)matImageFlattenedFloat.datastart, (float*)matImageFlattenedFloat.dataend);
+			}
+			else {
+				for (int i = 0; i < matImageFlattenedFloat.rows; ++i) {
+					array.insert(array.end(), (float*)matImageFlattenedFloat.ptr<uchar>(i), (float*)matImageFlattenedFloat.ptr<uchar>(i) + matImageFlattenedFloat.cols);
+				}
+			}
+			vector<double> vec;
+			matImageFlattenedFloat.row(0).copyTo(vec);
+			int m = 0;
+			for (int j = 0; j < 21; ++j)
+			{
+				for (int k = 0; k < 14; ++k)
+				{
+					if (vec[m] > 0)
+						vec[m] = 1;
+					else
+						vec[m] = 0;
+					m++;
+				}
+			}
+			std::pair<cv::Rect, vector<double>> npair(boundRect, vec);
+			map.push_back(npair);
+		}
+	}
+	cv::FileStorage fsTrainingImages("images.xml", cv::FileStorage::WRITE);         // open the training images file
+
+	if (fsTrainingImages.isOpened() == false) {                                                 // if the file was not opened successfully
+		std::cout << "error, unable to open training images file, exiting program\n\n";         // show error message
+		return std::vector<std::pair<cv::Rect, std::vector<double>>>();                                                                           // and exit program
 	}
 
 	fsTrainingImages << "images" << matTrainingImagesAsFlattenedFloats;         // write training images into images section of images file

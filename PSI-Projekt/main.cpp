@@ -4,6 +4,7 @@
 #include <vector>
 #include <chrono>
 #include <opencv2/core/core.hpp>
+#include <map>
 
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -17,272 +18,96 @@ using namespace cv;
 using namespace std;
 
 void xor();
-vector<vector<double>> parseOutputVal();
-Network * Hebb(vector<vector<double>> inputs);
 vector<double> getImgAsFloats(Mat image);
-
+vector<pair<vector<double>, vector<vector<double>>>> prepareTrainingSamples();
+map<char, vector<vector<double>>> prepareMapSamples();
+void displayImg(vector<double> image);
+void testLetter(Mat im, Network & network);
+char testLetter(vector<double> vec, Network & network);
+vector<pair<Rect, vector<double>>> sortLetter(vector<pair<Rect, vector<double>>>);
 int main()
 {
 	srand(time(NULL));
-	/*Neuron::activator = ActivatorFunctions::sigmoid;
-	Mat trainingSample = cv::imread("0sample.png");
-	Mat img1 = cv::imread("test_letter.png");
-	Mat img2 = cv::imread("test_letter0.png");
 
-	vector<double> im = getImgAsFloats(img1);
-	vector<double> im2 = getImgAsFloats(img2);
+	Mat img1 = cv::imread("test_letter.jpg");
+	Mat img2 = cv::imread("test_letter0.jpg");
+	Mat img3 = cv::imread("test_letterS.png");
+	Mat test = cv::imread("testIMG.png");
 
-	ImageConverter converter;
-	vector<vector<double>> map = converter.prepareSamples(trainingSample);
-	Network * net = Hebb(map);
-	net->initializeInputs(im, 0);
-	net->feedForward();
-	cout << "Result: " << net->layers.back().back().getOutputValue() << endl;
-
-	net->initializeInputs(im2, 0);
-	net->feedForward();
-	cout << "Result: " << net->layers.back().back().getOutputValue() << endl;*/
-	Mat img1 = cv::imread("test_letter.png");
-	Mat img2 = cv::imread("test_letter0.png");
-	vector<double> im = getImgAsFloats(img1);
-	vector<double> im2 = getImgAsFloats(img2);
-	int m = 0;
-	for (int j = 0; j < 30; ++j)
-	{
-		for (int k = 0; k < 20; ++k)
-		{
-			if (im[m] > 0)
-				im[m] = 1;
-			cout << im[m];
-			m++;
-		}
-		cout << endl;
-	}
-	m = 0;
-	for (int j = 0; j < 30; ++j)
-	{
-		for (int k = 0; k < 20; ++k)
-		{
-			if (im2[m] > 0)
-				im2[m] = 1;
-			cout << im2[m];
-			m++;
-		}
-		cout << endl;
-	}
 	Neuron::activator = ActivatorFunctions::sigmoid;
 	Neuron::derivativeActivator = ActivatorFunctions::derivativeSigmoid;
 	ImageConverter converter;
 	Mat traingImg = imread("training_chars0.png");
-	vector<vector<double>> map = converter.prepareSamples(traingImg);
-	
-	for (int i = 0; i < map.size(); ++i)
+	vector<pair<vector<double>, vector<vector<double>>>> map = prepareTrainingSamples();
+	vector<vector<double>> targets;
+	vector<vector<double>> inputs;
+	/*for (pair<vector<double>, vector<vector<double>>> pair : map)
 	{
-		m = 0;
-		for (int j = 0; j < 30; ++j)
+		for (vector<double> sample : pair.second)
 		{
-			for (int k = 0; k < 20; ++k)
-			{
-				cout << map[i][m];
-				m++;
-			}
-			cout << endl;
+			displayImg(sample);
 		}
-		cout << endl;
+	}*/
+	for (pair<vector<double>, vector<vector<double>>> eachSample : map)
+	{
+		targets.push_back(eachSample.first);
+		inputs.insert(inputs.end(), eachSample.second.begin(), eachSample.second.end());
 	}
 	
-	vector<vector<double>> targets = parseOutputVal();
-	double inputsSize = map[0].size();
+	//for (int i = 0; i < map.size(); ++i)
+		//displayImg(map[i]);
+
+	double inputsSize = inputs[0].size();
 	double outputsSize = targets[0].size();
 	vector<double> vec{inputsSize, sqrt(inputsSize*outputsSize), outputsSize };
 	Network network(vec);
-	MultipleOutputTrainer multipleTrainer(map, targets, network);
-	
-
-	network.initializeInputs(im, 0);
-	network.feedForward();
-	Layer & outputLayer = network.layers[1];
-	cout << "\n\n\nResults\n\n";
-	m = 0;
-	for (int j = 0; j < 30; ++j)
+	network.loadNetwork("weights_1483837191.txt");
+	auto let = ImageConverter::prepareImg(test);
+	vector<Mat> letters;
+	vector<vector<double>> letterConv;
+	vector<pair<Rect, vector<double>>> sortedLetter = sortLetter(let);
+	string text;
+	for (auto letter : sortedLetter)
 	{
-		for (int k = 0; k < 20; ++k)
-		{
-			cout << im[m];
-			m++;
-		}
+		text += testLetter(letter.second, network);
 		cout << endl;
 	}
-	for (int i = 0; i < outputLayer.size(); ++i)
-		cout << "neuron: " << i << "\t" << outputLayer[i].getOutputValue() << endl;
-	
+	cout << text << endl;
+	testLetter(img1, network);
+	testLetter(img2, network);
+	testLetter(img3, network);
 
-	network.initializeInputs(im2, 0);
-	network.feedForward();
-	outputLayer = network.layers[1];
-	cout << "\n\n\nResults\n\n";
-	m = 0;
-	for (int j = 0; j < 30; ++j)
-	{
-		for (int k = 0; k < 20; ++k)
-		{
-			cout << im2[m];
-			m++;
-		}
-		cout << endl;
-	}
-	for (int i = 0; i < outputLayer.size(); ++i)
-		cout << "neuron: " << i << "\t" << outputLayer[i].getOutputValue() << endl;
-	/*cv::Mat img1 = cv::imread("test.jpg");
-	cv::resize(img1, img1, cv::Size(), 2, 2);
-	//Detect
-	std::vector<cv::Rect> letterBBoxes1 = converter.detectLetters(img1);
-	//Display
-	for (int i = 0; i< letterBBoxes1.size(); i++)
-		cv::rectangle(img1, letterBBoxes1[i], cv::Scalar(182, 255, 255), 3, 8, 0);
-	using namespace std::chrono;
-	milliseconds ms = duration_cast< milliseconds >(
-		system_clock::now().time_since_epoch()
-		);
-	cv::imwrite("ConvertedImages/" + to_string(ms.count()) + ".jpg", img1);
-	
-	//Mat part = img1(letterBBoxes1[0]);
-	//cv::imwrite("ConvertedImages/ttt2.jpg", part);*/
 
-	
-	/*Mat large = imread("test.jpg");
-	Mat rgb;
-	// downsample and use it for processing
-	pyrDown(large, rgb);
-	Mat small;
-	cvtColor(rgb, small, CV_BGR2GRAY);
-	// morphological gradient
-	Mat grad;
-	Mat morphKernel = getStructuringElement(MORPH_ELLIPSE, Size(3, 3));
-	morphologyEx(small, grad, MORPH_GRADIENT, morphKernel);
-	// binarize
-	Mat bw;
-	threshold(grad, bw, 0.0, 255.0, THRESH_BINARY | THRESH_OTSU);
-	// connect horizontally oriented regions
-	Mat connected;
-	morphKernel = getStructuringElement(MORPH_RECT, Size(9, 1));
-	morphologyEx(bw, connected, MORPH_CLOSE, morphKernel);
-	// find contours
-	Mat mask = Mat::zeros(bw.size(), CV_8UC1);
-	vector<vector<Point>> contours;
-	vector<Vec4i> hierarchy;
-	findContours(connected, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
-	// filter contours
-	for (int idx = 0; idx >= 0; idx = hierarchy[idx][0])
-	{
-		Rect rect = boundingRect(contours[idx]);
-		Mat maskROI(mask, rect);
-		maskROI = Scalar(0, 0, 0);
-		// fill the contour
-		drawContours(mask, contours, idx, Scalar(255, 255, 255), CV_FILLED);
-		// ratio of non-zero pixels in the filled region
-		double r = (double)countNonZero(maskROI) / (rect.width*rect.height);
+	MultipleOutputTrainer multipleTrainer(map, network);
+	//network.saveWeights();
 
-		if (r > .45 &&(rect.height > 8 && rect.width > 8))
-		{
-			rectangle(rgb, rect, Scalar(0, 255, 0), 2);
-		}
-	}
-	imwrite("" + string("rgb.jpg"), rgb);*/
-
-	//xor ();
 	
 
 	system("pause");
 	return 0;
 }
 
-vector<double> getImgAsFloats(Mat image)
+vector<pair<Rect, vector<double>>> sortLetter(vector<pair<Rect, vector<double>>> letters)
 {
-	Mat imgTrainingNumbers, imgGrayscale, imgBlurred, imgThresh, imgThreshCopy;
-	imgTrainingNumbers = image;
-	vector<vector<Point>> ptContours; // declare contours vector
-	vector<Vec4i> v4iHierarchy; // declare contours hierarchy
-
-	Mat matTrainingImagesAsFlattenedFloats;
-
-
-	if (imgTrainingNumbers.empty())
+	int n = letters.size();
+	do
 	{
-		cout << "Error: image not exist! \n";
-		
-	}
-	cvtColor(imgTrainingNumbers, imgGrayscale, CV_BGR2GRAY); // convert to grayscale
-	GaussianBlur(imgGrayscale, imgBlurred, Size(5, 5), 0);
-	adaptiveThreshold(imgBlurred,
-		imgThresh,
-		255,							// make pixels that pass the threshold full white
-		ADAPTIVE_THRESH_GAUSSIAN_C,
-		THRESH_BINARY_INV,				// invert so foreground will be white, background will be black
-		11,								// size of a pixel neighborhood used to calculate threshold value
-		2
-		);
-	imgThreshCopy = imgThresh.clone();
-	findContours(imgThreshCopy,
-		ptContours,
-		v4iHierarchy,
-		RETR_EXTERNAL,
-		CHAIN_APPROX_SIMPLE);
-	//imwrite("Thresh1.jpg", imgThresh);
-	//imwrite("Thresh2.jpg", imgThreshCopy);
-	Mat binary;
-	vector<vector<double>> map;
-	vector<double> vec;
-	for (int i = 0; i < ptContours.size(); ++i)
-	{
-		if (contourArea(ptContours[i]) > 100)
+		for (int i = 0; i < n - 1; i++)
 		{
-			Rect boundRect = boundingRect(ptContours[i]);
-			rectangle(imgTrainingNumbers, boundRect, Scalar(0, 0, 255), 2);
-			Mat matPart = imgThresh(boundRect); // part of image
-			Mat matPartResized;
-			resize(matPart, matPartResized, Size(20, 30));
-			imwrite("resize.jpg", matPartResized);
-			//Mat binary(matPartResized.size(), matPartResized.type());
-			threshold(matPartResized, binary, 100, 255, THRESH_BINARY);
-			Mat matImageFloat;
-			matPartResized.convertTo(matImageFloat, CV_32FC3, 1 / 255.0);
-			Mat matImageFlattenedFloat = matImageFloat.reshape(1, 1);
-			matTrainingImagesAsFlattenedFloats.push_back(matImageFlattenedFloat);
-			matImageFlattenedFloat.row(0).copyTo(vec);
-			std::vector<double> array;
-			if (matImageFlattenedFloat.isContinuous()) {
-				array.assign((double*)matImageFlattenedFloat.datastart, (double*)matImageFlattenedFloat.dataend);
-			}
-			else {
-				for (int i = 0; i < matImageFlattenedFloat.rows; ++i) {
-					array.insert(array.end(), (double*)matImageFlattenedFloat.ptr<uchar>(i), (double*)matImageFlattenedFloat.ptr<uchar>(i) + matImageFlattenedFloat.cols);
-				}
-			}
-			map.push_back(array);
+			if (letters[i].first.x > letters[i + 1].first.x && letters[i].first.y <= letters[i + 1].first.y)
+				swap(letters[i], letters[i + 1]);
 		}
-	}
-	cv::FileStorage fsTrainingImages("images2.xml", cv::FileStorage::WRITE);         // open the training images file
-
-	if (fsTrainingImages.isOpened() == false) {                                                 // if the file was not opened successfully
-		std::cout << "error, unable to open training images file, exiting program\n\n";         // show error message
-		                                                                             // and exit program
-	}
+		n--;
+	} while (n > 1);
+	return letters;
 	
-	fsTrainingImages << "images" << matTrainingImagesAsFlattenedFloats;         // write training images into images section of images file
-	fsTrainingImages.release();
-	
-	return vec;
 }
 
-vector<vector<double>> parseOutputVal()
+vector<double> getImgAsFloats(Mat image)
 {
-	vector<int> intValidChars = { '0', '1' };
-
-	vector<vector<double>> outputs = { {0,1}, {1,0}, {1,0}, {0,1}, {0,1}, {0,1}, {1,0}, {1,0},{0,1}, {1,0} };
+	vector<vector<double>> sample = ImageConverter::prepareSamples(image);
 	
-	
-	return outputs;
+	return sample[0];
 }
 
 void xor()
@@ -320,27 +145,90 @@ void xor()
 	cout << "\nTest : " << inp[0] << " " << inp[1] << "\t" << network.layers.back().back().getOutputValue();
 }
 
-Network * Hebb(vector<vector<double>> inputs)
+char testLetter(vector<double> vec, Network & network)
 {
-	int counter = 0;
-	Network * network = new Network({ 600, 1 });
-	vector<double> results;
-	while (counter < 20)
+	double best = 0;
+	char chosen;
+	network.initializeInputs(vec, 0);
+	network.feedForward();
+	vector<Neuron> outputLayer = network.layers[1];
+	cout << "\n\n\nResults\n\n";
+	displayImg(vec);
+	for (int i = 0; i < outputLayer.size(); ++i)
+		cout << "neuron: " << (char)(i + 65) << "\t" << outputLayer[i].getOutputValue() << endl;
+
+	for (int i = 0; i < outputLayer.size(); ++i)
 	{
-		for (vector<double> input : inputs)
+		if (best < outputLayer[i].getOutputValue())
 		{
-			network->initializeInputs(input, 0);
-			for (Neuron & neuron : network->layers[0])
-			{
-				neuron.calculateOutputValue();
-			}
-			network->hebbLearn();
-			results.push_back(network->layers.back().back().getOutputValue());
-			cout << "Value: " << network->layers.back().back().getOutputValue() << endl;
+			best = outputLayer[i].getOutputValue();
+			chosen = (char)(i + 65);
 		}
-		counter++;
 	}
-	BaseTrainer::saveDelatasToCSV(results);
-	
-	return network;
+	return chosen;
+}
+
+void testLetter(Mat im, Network & network)
+{
+	vector<double> img = getImgAsFloats(im);
+	network.initializeInputs(img, 0);
+	network.feedForward();
+	vector<Neuron> outputLayer = network.layers[1];
+	cout << "\n\n\nResults\n\n";
+	displayImg(img);
+	for (int i = 0; i < outputLayer.size(); ++i)
+		cout << "neuron: " << (char)(i + 65) << "\t" << outputLayer[i].getOutputValue() << endl;
+
+}
+
+void displayImg(vector<double> image)
+{
+	int m = 0;
+	for (int j = 0; j < 21; ++j)
+	{
+		for (int k = 0; k < 14; ++k)
+		{
+			cout << image[m];
+			m++;
+		}
+		cout << endl;
+	}
+}
+
+vector<pair<vector<double>, vector<vector<double>>>> prepareTrainingSamples()
+{
+	map<char, vector<vector<double>>> samples = prepareMapSamples();
+	vector<pair<vector<double>, vector<vector<double>>>> convertedSamples;
+	int size = samples.size();
+	for (pair<char, vector<vector<double>>> eachSample : samples)
+	{
+		vector<double> target;
+		int key = (int)eachSample.first - 65;
+		for (int i = 0; i < 26; i++)
+		{
+			if (i == key)
+				target.push_back(1);
+			else
+				target.push_back(0);
+		}
+		convertedSamples.push_back(pair<vector<double>, vector<vector<double>>>(target, eachSample.second));
+	}
+	return convertedSamples;
+}
+
+map<char, vector<vector<double>>> prepareMapSamples()
+{
+	map<char, vector<vector<double>>> samples;
+	for (int i = 65; i < 91; i++)
+	{
+		char sign = (char)i;
+		string fileName;
+		fileName.push_back(sign);
+		fileName += ".png";
+		Mat img1 = cv::imread("TrainingSample/" + fileName);
+		
+		vector<vector<double>> letterSample = ImageConverter::prepareSamples(img1);
+		samples.insert(pair<char, vector<vector<double>>>(sign, letterSample));
+	}
+	return samples;
 }

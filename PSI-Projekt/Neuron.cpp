@@ -69,7 +69,7 @@ double Neuron::calculateOutputValue()
 		sum += (connection.weight * connection.value);
 		
 	}
-	this->outputValue = sum;
+	this->outputValue = activator(sum);
 	return outputValue;
 }
 
@@ -115,3 +115,4 @@ void Neuron::updateInputWeight(double q)
 		inputs[i].weight += deltaWeight;
 	}
 }
+
